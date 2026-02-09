@@ -40,7 +40,8 @@
       "Bash(export:*)",
       "Bash(claude:*)",
       "Bash(cmd.exe /c \"glm.bat -p say hello 2>&1\")",
-      "Bash(cmd.exe /c \"echo %USERPROFILE%\")"
+      "Bash(cmd.exe /c \"echo %USERPROFILE%\")",
+      "Bash(cmd.exe /c \"echo %PATH%\")"
     ]
   }
 }
