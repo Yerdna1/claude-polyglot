@@ -1,0 +1,35 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(mkdir:*)",
+      "Bash(chmod:*)",
+      "Bash(ln:*)",
+      "Bash(cat:*)",
+      "Bash(diskutil info:*)",
+      "Bash(/Volumes/DATA/Python/claude-polyglot/bin/claude-poly list:*)",
+      "Bash(/Volumes/DATA/Python/claude-polyglot/install.sh:*)",
+      "Bash(source:*)",
+      "Bash(claude-poly list:*)",
+      "Bash(/Volumes/DATA/Python/claude-polyglot/bin/glm:*)",
+      "Bash(/Volumes/DATA/Python/claude-polyglot/bin/claude-poly status:*)",
+      "Bash(pip3 show:*)",
+      "Bash(/Volumes/DATA/Python/claude-polyglot/bin/proxy-start:*)",
+      "Bash(/Volumes/DATA/Python/claude-polyglot/bin/proxy-status:*)",
+      "Bash(pip3 install:*)",
+      "Bash(curl:*)",
+      "Bash(python3:*)",
+      "Bash(pkill:*)",
+      "WebFetch(domain:docs.z.ai)",
+      "Bash(./install.sh:*)",
+      "Bash(sudo:*)",
+      "Bash(model=\"openrouter/pony-alpha\")",
+      "Bash(if [[ \"$model\" == openrouter/* ]])",
+      "Bash(then)",
+      "Bash(else)",
+      "Bash(fi)",
+      "Bash(CLAUDE_POLY_DEBUG=1 /Volumes/DATA/Python/claude-polyglot/bin/claude-poly:*)",
+      "Bash(OPENAI_API_KEY=\"$OPENROUTER_API_KEY\" OPENAI_BASE_URL=\"$OPENROUTER_BASE_URL\" OPENAI_MODEL=\"openrouter/pony-alpha\" env)",
+      "Bash(gh repo list:*)"
+    ]
+  }
+}

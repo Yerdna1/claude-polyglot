@@ -1,0 +1,23 @@
+#!/bin/bash
+# Stop LiteLLM proxy
+
+PID_FILE="$HOME/.claude-poly-proxy.pid"
+
+RED='\033[0;31m'
+GREEN='\033[0;32m'
+YELLOW='\033[1;33m'
+NC='\033[0m'
+
+if [[ -f "$PID_FILE" ]]; then
+    pid=$(cat "$PID_FILE")
+    if kill -0 "$pid" 2>/dev/null; then
+        kill "$pid"
+        rm -f "$PID_FILE"
+        echo -e "${GREEN}Proxy stopped (PID: $pid)${NC}"
+    else
+        rm -f "$PID_FILE"
+        echo -e "${YELLOW}Proxy was not running${NC}"
+    fi
+else
+    echo -e "${YELLOW}No proxy PID file found${NC}"
+fi

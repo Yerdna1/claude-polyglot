@@ -1,0 +1,3 @@
+#!/bin/bash
+# OpenRouter Pony Alpha model
+exec "$(dirname "$0")/claude-poly" OPENROUTER-PONY "$@"

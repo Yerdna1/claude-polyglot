@@ -1,0 +1,305 @@
+#!/bin/bash
+# Claude Code Multi-Provider Launcher
+# Usage: claude-poly [PROVIDER] [claude-code-args...]
+# Example: claude-poly GLM
+#          claude-poly GEMINI --help
+#          claude-poly (without args = list providers)
+
+set -e
+
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+CONFIG_DIR="$(dirname "$SCRIPT_DIR")/config"
+ENV_FILE="$(dirname "$SCRIPT_DIR")/.env"
+STATUS_FILE="$HOME/.claude-poly-status"
+
+# Colors for output
+RED='\033[0;31m'
+GREEN='\033[0;32m'
+YELLOW='\033[1;33m'
+BLUE='\033[0;34m'
+CYAN='\033[0;36m'
+NC='\033[0m' # No Color
+BOLD='\033[1m'
+
+# Load environment variables from .env file
+load_env() {
+    if [[ -f "$ENV_FILE" ]]; then
+        set -a
+        source "$ENV_FILE"
+        set +a
+    fi
+}
+
+# Set terminal title
+set_terminal_title() {
+    local title="$1"
+    # Works in most terminals (iTerm2, Terminal.app, etc.)
+    echo -ne "\033]0;${title}\007"
+}
+
+# Save current status to file
+save_status() {
+    local provider="$1"
+    local model="$2"
+    local display="$3"
+    echo "PROVIDER=\"$provider\"" > "$STATUS_FILE"
+    echo "MODEL=\"$model\"" >> "$STATUS_FILE"
+    echo "DISPLAY=\"$display\"" >> "$STATUS_FILE"
+    echo "STARTED=\"$(date '+%Y-%m-%d %H:%M:%S')\"" >> "$STATUS_FILE"
+}
+
+# Show current status
+show_status() {
+    if [[ -f "$STATUS_FILE" ]]; then
+        source "$STATUS_FILE"
+        echo -e "${CYAN}╔═══════════════════════════════════════════════════════════╗${NC}"
+        echo -e "${CYAN}║${NC} ${BOLD}Current Claude Code Session${NC}"
+        echo -e "${CYAN}║${NC} Provider: ${YELLOW}$DISPLAY${NC}"
+        echo -e "${CYAN}║${NC} Model:    ${GREEN}$MODEL${NC}"
+        echo -e "${CYAN}║${NC} Started:  ${BLUE}$STARTED${NC}"
+        echo -e "${CYAN}╚═══════════════════════════════════════════════════════════╝${NC}"
+    else
+        echo -e "${YELLOW}No active session. Run 'claude-poly <PROVIDER>' to start.${NC}"
+    fi
+}
+
+# Clear status
+clear_status() {
+    rm -f "$STATUS_FILE"
+}
+
+# Print header
+print_header() {
+    echo -e "${CYAN}"
+    echo "╔═══════════════════════════════════════════════════════════╗"
+    echo "║       Claude Code Multi-Provider Launcher                 ║"
+    echo "║                  claude-poly                              ║"
+    echo "╚═══════════════════════════════════════════════════════════╝"
+    echo -e "${NC}"
+}
+
+# List available providers
+list_providers() {
+    print_header
+    echo -e "${BOLD}Available Providers:${NC}\n"
+
+    printf "  ${BOLD}%-15s %-25s %-20s${NC}\n" "COMMAND" "MODEL" "DESCRIPTION"
+    echo "  ─────────────────────────────────────────────────────────────"
+
+    while IFS='|' read -r provider model display api_key_var base_url_var; do
+        # Skip comments and empty lines
+        [[ "$provider" =~ ^#.*$ || -z "$provider" ]] && continue
+
+        # Check if API key is configured
+        api_key="${!api_key_var}"
+        if [[ -n "$api_key" ]]; then
+            status="${GREEN}●${NC}"
+        else
+            status="${RED}○${NC}"
+        fi
+
+        printf "  $status ${YELLOW}%-13s${NC} %-25s %-20s\n" "$provider" "$model" "$display"
+    done < "$CONFIG_DIR/providers.conf"
+
+    echo ""
+    echo -e "  ${GREEN}●${NC} = API key configured    ${RED}○${NC} = API key missing"
+    echo ""
+    echo -e "${BOLD}Usage:${NC}"
+    echo "  claude-poly <PROVIDER> [args...]    Launch Claude Code with provider"
+    echo "  claude-poly list                    Show this list"
+    echo "  claude-poly help                    Show help"
+    echo ""
+    echo -e "${BOLD}Examples:${NC}"
+    echo "  claude-poly GLM                     Start with GLM-4"
+    echo "  claude-poly GEMINI                  Start with Gemini"
+    echo "  claude-poly DEEPSEEK               Start with DeepSeek"
+    echo ""
+    echo -e "${BOLD}Shortcut commands (after install):${NC}"
+    echo "  GLM, MINIMAX, GEMINI, GPT, DEEPSEEK, QWEN, GROQ"
+    echo ""
+}
+
+# Show help
+show_help() {
+    print_header
+    echo -e "${BOLD}Claude Code Multi-Provider Wrapper${NC}"
+    echo ""
+    echo "This tool allows you to run Claude Code with different AI providers"
+    echo "by setting the appropriate environment variables."
+    echo ""
+    echo -e "${BOLD}Setup:${NC}"
+    echo "  1. Copy .env.example to .env"
+    echo "  2. Fill in your API keys for the providers you want to use"
+    echo "  3. Run ./install.sh to add shortcut commands to your PATH"
+    echo ""
+    echo -e "${BOLD}Commands:${NC}"
+    echo "  claude-poly <PROVIDER>     Launch with specific provider"
+    echo "  claude-poly list           List all providers"
+    echo "  claude-poly help           Show this help"
+    echo ""
+    echo -e "${BOLD}Environment Variables:${NC}"
+    echo "  CLAUDE_POLY_DEBUG=1        Enable debug output"
+    echo ""
+}
+
+# Convert to uppercase (portable)
+to_upper() {
+    echo "$1" | tr '[:lower:]' '[:upper:]'
+}
+
+# Get provider configuration
+get_provider_config() {
+    local provider_name=$(to_upper "$1")
+
+    while IFS='|' read -r provider model display api_key_var base_url_var; do
+        # Skip comments and empty lines
+        [[ "$provider" =~ ^#.*$ || -z "$provider" ]] && continue
+
+        local provider_upper=$(to_upper "$provider")
+        if [[ "$provider_upper" == "$provider_name" ]]; then
+            echo "$provider|$model|$display|$api_key_var|$base_url_var"
+            return 0
+        fi
+    done < "$CONFIG_DIR/providers.conf"
+
+    return 1
+}
+
+# Launch Claude Code with provider
+launch_with_provider() {
+    local provider_name="$1"
+    shift
+    local extra_args="$@"
+
+    # Get provider configuration
+    local config
+    config=$(get_provider_config "$provider_name")
+
+    if [[ -z "$config" ]]; then
+        echo -e "${RED}Error: Unknown provider '$provider_name'${NC}"
+        echo "Run 'claude-poly list' to see available providers"
+        exit 1
+    fi
+
+    IFS='|' read -r provider model display api_key_var base_url_var <<< "$config"
+
+    # Get API key and base URL from environment
+    local api_key="${!api_key_var}"
+    local base_url="${!base_url_var}"
+
+    if [[ -z "$api_key" ]]; then
+        echo -e "${RED}Error: API key not configured for $provider${NC}"
+        echo "Please set $api_key_var in your .env file"
+        echo ""
+        echo "Location: $ENV_FILE"
+        exit 1
+    fi
+
+    # Set terminal title to show provider/model
+    set_terminal_title "Claude Code [$display] - $model"
+
+    # Save status for later reference
+    save_status "$provider" "$model" "$display"
+
+    # Export provider info for scripts/tools that want to check
+    export CLAUDE_POLY_PROVIDER="$provider"
+    export CLAUDE_POLY_MODEL="$model"
+    export CLAUDE_POLY_DISPLAY="$display"
+
+    echo -e "${CYAN}╔═══════════════════════════════════════════════════════════╗${NC}"
+    echo -e "${CYAN}║${NC} ${BOLD}Launching Claude Code${NC}"
+    echo -e "${CYAN}║${NC} Provider: ${YELLOW}$display${NC}"
+    echo -e "${CYAN}║${NC} Model:    ${GREEN}$model${NC}"
+    echo -e "${CYAN}╚═══════════════════════════════════════════════════════════╝${NC}"
+    echo ""
+
+    # Debug output
+    if [[ -n "$CLAUDE_POLY_DEBUG" ]]; then
+        echo -e "${YELLOW}Debug: API Key var = $api_key_var${NC}"
+        echo -e "${YELLOW}Debug: Base URL = $base_url${NC}"
+        echo -e "${YELLOW}Debug: Model = $model${NC}"
+    fi
+
+    # Set environment and launch Claude Code
+    export ANTHROPIC_API_KEY="$api_key"
+    export ANTHROPIC_MODEL="$model"
+
+    if [[ -n "$base_url" ]]; then
+        export ANTHROPIC_BASE_URL="$base_url"
+    fi
+
+    # Special handling for different providers
+    local provider_upper=$(to_upper "$provider")
+    case "$provider_upper" in
+        GLM*)
+            # Z.AI uses ANTHROPIC_AUTH_TOKEN instead of ANTHROPIC_API_KEY
+            unset ANTHROPIC_API_KEY
+            export ANTHROPIC_AUTH_TOKEN="$api_key"
+            export API_TIMEOUT_MS="3000000"
+            ;;
+        GEMINI*)
+            # Gemini uses Google AI Studio format
+            export ANTHROPIC_BASE_URL="${base_url}/openai"
+            ;;
+        MINIMAX*)
+            # Minimax may need group ID
+            if [[ -n "$MINIMAX_GROUP_ID" ]]; then
+                export ANTHROPIC_BASE_URL="${base_url}/text/chatcompletion_v2"
+            fi
+            ;;
+        OPENROUTER*)
+            # OpenRouter configuration
+            export OPENROUTER_REFERRER="claude-code-wrapper"
+            # For OPENROUTER-PONY, use LiteLLM proxy to translate model name
+            if [[ "$provider" == "OPENROUTER-PONY" ]]; then
+                echo -e "${YELLOW}Using OpenRouter Pony Alpha via LiteLLM proxy${NC}"
+                # Start LiteLLM proxy if not running
+                local proxy_pid_file="$HOME/.claude-poly-proxy.pid"
+                if [[ ! -f "$proxy_pid_file" ]] || ! kill -0 $(cat "$proxy_pid_file") 2>/dev/null; then
+                    echo -e "${YELLOW}Starting LiteLLM proxy...${NC}"
+                    "$SCRIPT_DIR/proxy-start" >/dev/null 2>&1 &
+                    sleep 2
+                fi
+                # Use claude-sonnet-4-20250514 (recognized by Claude) -> proxy translates to openrouter/pony-alpha
+                export ANTHROPIC_API_KEY="fake-key-for-proxy"
+                export ANTHROPIC_MODEL="claude-sonnet-4-20250514"
+                export ANTHROPIC_BASE_URL="http://localhost:4000"
+            else
+                # For other OpenRouter models, use Anthropic format directly
+                echo -e "${YELLOW}Using OpenRouter with model: $model${NC}"
+                export ANTHROPIC_API_KEY="$api_key"
+                export ANTHROPIC_MODEL="$model"
+                export ANTHROPIC_BASE_URL="$base_url"
+            fi
+            ;;
+    esac
+
+    # Launch Claude Code
+    exec claude $extra_args
+}
+
+# Main entry point
+main() {
+    load_env
+
+    case "${1:-}" in
+        ""|list|--list|-l)
+            list_providers
+            ;;
+        help|--help|-h)
+            show_help
+            ;;
+        status|--status|-s)
+            show_status
+            ;;
+        clear|--clear)
+            clear_status
+            echo -e "${GREEN}Status cleared.${NC}"
+            ;;
+        *)
+            launch_with_provider "$@"
+            ;;
+    esac
+}
+
+main "$@"

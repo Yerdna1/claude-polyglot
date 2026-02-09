@@ -1,0 +1,3 @@
+#!/bin/bash
+# GLM-4.7 (Z.AI Coding Plan) - Direct Anthropic-compatible endpoint
+exec "$(dirname "$0")/claude-poly" GLM "$@"

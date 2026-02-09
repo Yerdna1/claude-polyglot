@@ -1,0 +1,61 @@
+# LiteLLM Proxy Configuration for Claude Code Multi-Provider
+# This translates Anthropic API format to various providers
+
+model_list:
+  # GLM Models (Z.AI) - OpenAI-compatible
+  - model_name: glm-4.7
+    litellm_params:
+      model: openai/glm-4.7
+      api_key: os.environ/GLM_API_KEY
+      api_base: https://api.z.ai/api/paas/v4
+
+  - model_name: glm-4.7-flash
+    litellm_params:
+      model: openai/glm-4.7-flash
+      api_key: os.environ/GLM_API_KEY
+      api_base: https://api.z.ai/api/paas/v4
+
+  # DeepSeek Models
+  - model_name: deepseek-chat
+    litellm_params:
+      model: deepseek/deepseek-chat
+      api_key: os.environ/DEEPSEEK_API_KEY
+
+  - model_name: deepseek-coder
+    litellm_params:
+      model: deepseek/deepseek-coder
+      api_key: os.environ/DEEPSEEK_API_KEY
+
+  # Qwen Models (Alibaba)
+  - model_name: qwen-max
+    litellm_params:
+      model: qwen/qwen-max
+      api_key: os.environ/QWEN_API_KEY
+
+  - model_name: qwen-plus
+    litellm_params:
+      model: qwen/qwen-plus
+      api_key: os.environ/QWEN_API_KEY
+
+  - model_name: qwen-turbo
+    litellm_params:
+      model: qwen/qwen-turbo
+      api_key: os.environ/QWEN_API_KEY
+
+  # MiniMax Models
+  - model_name: minimax-text-01
+    litellm_params:
+      model: minimax/MiniMax-Text-01
+      api_key: os.environ/MINIMAX_API_KEY
+
+  # OpenRouter Models
+  - model_name: claude-sonnet-4-20250514
+    litellm_params:
+      model: openrouter/openrouter/pony-alpha
+      api_key: os.environ/OPENROUTER_API_KEY
+      api_base: https://openrouter.ai/api/v1
+
+# General settings
+litellm_settings:
+  drop_params: true
+  set_verbose: false

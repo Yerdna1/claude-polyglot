@@ -1,0 +1,32 @@
+#!/bin/bash
+# Check LiteLLM proxy status
+
+PID_FILE="$HOME/.claude-poly-proxy.pid"
+PORT=${LITELLM_PORT:-4000}
+
+RED='\033[0;31m'
+GREEN='\033[0;32m'
+YELLOW='\033[1;33m'
+CYAN='\033[0;36m'
+NC='\033[0m'
+
+if [[ -f "$PID_FILE" ]]; then
+    pid=$(cat "$PID_FILE")
+    if kill -0 "$pid" 2>/dev/null; then
+        echo -e "${GREEN}●${NC} Proxy running (PID: $pid)"
+        echo -e "  Endpoint: ${CYAN}http://localhost:$PORT${NC}"
+        
+        # Check if responding
+        if curl -s "http://localhost:$PORT/health" > /dev/null 2>&1; then
+            echo -e "  Health: ${GREEN}OK${NC}"
+        else
+            echo -e "  Health: ${YELLOW}Starting...${NC}"
+        fi
+    else
+        echo -e "${RED}○${NC} Proxy not running (stale PID file)"
+        rm -f "$PID_FILE"
+    fi
+else
+    echo -e "${RED}○${NC} Proxy not running"
+    echo -e "  Start with: ${CYAN}proxy-start${NC}"
+fi

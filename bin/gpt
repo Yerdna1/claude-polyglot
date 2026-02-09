@@ -1,0 +1,3 @@
+#!/bin/bash
+# OpenAI GPT-4o
+exec "$(dirname "$0")/claude-poly" GPT "$@"

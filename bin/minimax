@@ -1,0 +1,3 @@
+#!/bin/bash
+# MiniMax AI
+exec "$(dirname "$0")/claude-poly" MINIMAX "$@"

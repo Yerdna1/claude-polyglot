@@ -1,0 +1,3 @@
+#!/bin/bash
+# OpenRouter - Multi-provider AI gateway (Claude via OpenRouter)
+exec "$(dirname "$0")/claude-poly" OPENROUTER "$@"

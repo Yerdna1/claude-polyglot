@@ -1,0 +1,3 @@
+#!/bin/bash
+# DeepSeek AI
+exec "$(dirname "$0")/claude-poly" DEEPSEEK "$@"

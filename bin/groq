@@ -1,0 +1,3 @@
+#!/bin/bash
+# Groq (Fast inference)
+exec "$(dirname "$0")/claude-poly" GROQ "$@"

@@ -1,0 +1,3 @@
+#!/bin/bash
+# Google Gemini
+exec "$(dirname "$0")/claude-poly" GEMINI "$@"
