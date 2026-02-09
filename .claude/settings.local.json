@@ -31,7 +31,16 @@
       "Bash(OPENAI_API_KEY=\"$OPENROUTER_API_KEY\" OPENAI_BASE_URL=\"$OPENROUTER_BASE_URL\" OPENAI_MODEL=\"openrouter/pony-alpha\" env)",
       "Bash(gh repo list:*)",
       "Bash(./bin/glm:*)",
-      "Bash(echo:*)"
+      "Bash(echo:*)",
+      "Bash(bash bin/glm:*)",
+      "Bash(cmd.exe /c \"cd /d C:\\\\Users\\\\AndrejGalad\\\\Desktop\\\\claude-polyglot && glm.bat -p \"\"say hello\"\" 2>&1\")",
+      "Bash(where:*)",
+      "Bash(cmd.exe /c \"set ANTHROPIC_AUTH_TOKEN=b493c271d4bf4119884670e62a638c0b.JPltLiE1K2FzfiPz && set ANTHROPIC_MODEL=claude-opus-4-6 && set ANTHROPIC_BASE_URL=https://api.z.ai/api/anthropic && set API_TIMEOUT_MS=3000000 && claude -p \"\"say hello\"\" 2>&1\")",
+      "Bash(export ANTHROPIC_AUTH_TOKEN=\"b493c271d4bf4119884670e62a638c0b.JPltLiE1K2FzfiPz\":*)",
+      "Bash(export:*)",
+      "Bash(claude:*)",
+      "Bash(cmd.exe /c \"glm.bat -p say hello 2>&1\")",
+      "Bash(cmd.exe /c \"echo %USERPROFILE%\")"
     ]
   }
 }
