@@ -232,7 +232,8 @@ launch_with_provider() {
     local provider_upper=$(to_upper "$provider")
     case "$provider_upper" in
         GLM*)
-            # Z.AI uses ANTHROPIC_AUTH_TOKEN instead of ANTHROPIC_API_KEY
+            # Z.AI Anthropic-compatible endpoint (coding plan)
+            # Z.AI maps claude-opus-4.6 to GLM-5 on their backend
             unset ANTHROPIC_API_KEY
             export ANTHROPIC_AUTH_TOKEN="$api_key"
             export API_TIMEOUT_MS="3000000"
@@ -262,7 +263,7 @@ launch_with_provider() {
                 fi
                 # Use claude-sonnet-4-20250514 (recognized by Claude) -> proxy translates to openrouter/pony-alpha
                 export ANTHROPIC_API_KEY="fake-key-for-proxy"
-                export ANTHROPIC_MODEL="claude-sonnet-4-20250514"
+                export ANTHROPIC_MODEL="claude-sonnet-4-5-20250929"
                 export ANTHROPIC_BASE_URL="http://localhost:4000"
             else
                 # For other OpenRouter models, use Anthropic format directly

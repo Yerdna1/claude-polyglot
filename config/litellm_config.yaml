@@ -3,15 +3,9 @@
 
 model_list:
   # GLM Models (Z.AI) - OpenAI-compatible
-  - model_name: glm-4.7
+  - model_name: glm-5
     litellm_params:
-      model: openai/glm-4.7
-      api_key: os.environ/GLM_API_KEY
-      api_base: https://api.z.ai/api/paas/v4
-
-  - model_name: glm-4.7-flash
-    litellm_params:
-      model: openai/glm-4.7-flash
+      model: openai/glm-5
       api_key: os.environ/GLM_API_KEY
       api_base: https://api.z.ai/api/paas/v4
 
@@ -21,12 +15,12 @@ model_list:
       model: deepseek/deepseek-chat
       api_key: os.environ/DEEPSEEK_API_KEY
 
-  - model_name: deepseek-coder
+  - model_name: deepseek-reasoner
     litellm_params:
-      model: deepseek/deepseek-coder
+      model: deepseek/deepseek-reasoner
       api_key: os.environ/DEEPSEEK_API_KEY
 
-  # Qwen Models (Alibaba)
+  # Qwen Models (Alibaba) - aliases auto-route to latest Qwen3
   - model_name: qwen-max
     litellm_params:
       model: qwen/qwen-max
@@ -43,13 +37,13 @@ model_list:
       api_key: os.environ/QWEN_API_KEY
 
   # MiniMax Models
-  - model_name: minimax-text-01
+  - model_name: minimax-m2.1
     litellm_params:
-      model: minimax/MiniMax-Text-01
+      model: minimax/MiniMax-M2.1
       api_key: os.environ/MINIMAX_API_KEY
 
   # OpenRouter Models
-  - model_name: claude-sonnet-4-20250514
+  - model_name: claude-sonnet-4-5-20250929
     litellm_params:
       model: openrouter/openrouter/pony-alpha
       api_key: os.environ/OPENROUTER_API_KEY

@@ -29,7 +29,15 @@
       "Bash(fi)",
       "Bash(CLAUDE_POLY_DEBUG=1 /Volumes/DATA/Python/claude-polyglot/bin/claude-poly:*)",
       "Bash(OPENAI_API_KEY=\"$OPENROUTER_API_KEY\" OPENAI_BASE_URL=\"$OPENROUTER_BASE_URL\" OPENAI_MODEL=\"openrouter/pony-alpha\" env)",
-      "Bash(gh repo list:*)"
+      "Bash(gh repo list:*)",
+      "WebFetch(domain:ai.google.dev)",
+      "WebFetch(domain:console.groq.com)",
+      "WebFetch(domain:platform.openai.com)",
+      "WebFetch(domain:www.alibabacloud.com)",
+      "WebFetch(domain:api-docs.deepseek.com)",
+      "WebFetch(domain:openrouter.ai)",
+      "WebFetch(domain:docs.litellm.ai)",
+      "WebFetch(domain:platform.minimax.io)"
     ]
   }
 }
